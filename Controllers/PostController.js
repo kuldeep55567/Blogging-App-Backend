@@ -76,6 +76,40 @@ postRouter.post("/create-blog", authMiddleWare, async (req, res) => {
     res.status(500).json({ message: 'Error creating blog post' });
   }
 })
+postRouter.put("/edit-blog/:id", authMiddleWare, async (req, res) => {
+  const { title, content } = req.body;
+  const postId = req.params.id;
+  try {
+    const updatedPost = await Post.update(
+      { title, content },
+      { where: { id: postId, UserId: req.user.id } }
+    );
+    if (updatedPost[0] === 1) {
+      res.status(200).json({ message: 'Blog post updated successfully!', updatedPost });
+    } else {
+      res.status(404).json({ message: 'Blog post not found or unauthorized' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error updating blog post' });
+  }
+});
+postRouter.delete('/delete-blog/:id', authMiddleWare, async (req, res) => {
+  const postId = req.params.id;
+  try {
+    const deletedPost = await Post.destroy({
+      where: { id: postId, UserId: req.user.id },
+    });
+    if (deletedPost === 1) {
+      res.status(200).json({ message: 'Blog post deleted successfully!' });
+    } else {
+      res.status(404).json({ message: 'Blog post not found or unauthorized' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting blog post' });
+  }
+});
 postRouter.post('/post/:postId/comment', authMiddleWare, async (req, res) => {
   const postId = req.params.postId;
   const { text } = req.body;
